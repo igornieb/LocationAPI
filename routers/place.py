@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 import schemas
 from sqlalchemy.sql.functions import func
-from models.Place import Place
+from models.Place import Place, Opinion
 from database import get_db, engine
 
 router = APIRouter(
@@ -14,13 +14,12 @@ router = APIRouter(
 paginate_by = 50
 
 
-# TODO pagiantion
 @router.get("/list-in-radius/{radius}/{lat}/{lon}", response_model=List[schemas.Place])
 def get_places_in_radius(radius: float, lon: float, lat: float, page: int = 1, db: Session = Depends(get_db)):
-    print("CCC")
+    offset = (page - 1) * paginate_by
     center = func.ST_Point(lon, lat)
     places = db.query(Place).filter(Place.published == True, func.ST_DWithin(Place.location, center, radius)).order_by(
-        Place.location).all()
+        Place.avg_score()).offset(offset).limit(paginate_by).all()
 
     # TODO odegosc i sort po odleglosci
     return places
@@ -29,9 +28,11 @@ def get_places_in_radius(radius: float, lon: float, lat: float, page: int = 1, d
 @router.get("/list-in-radius-category/{category}/{radius}/{lat}/{lon}", response_model=List[schemas.Place])
 def get_places_in_radius_category(category: str, radius: float, lon: float, lat: float, page: int = 1,
                                   db: Session = Depends(get_db)):
+    offset = (page - 1) * paginate_by
     center = func.ST_Point(lon, lat)
     places = db.query(Place).filter(Place.published == True, Place.category == category,
-                                    func.ST_DWithin(Place.location, center, radius)).order_by(Place.location).all()
+                                    func.ST_DWithin(Place.location, center, radius)).order_by(Place.location).offset(
+        offset).limit(paginate_by).all()
 
     # TODO odegosc i sort po odleglosci
     return places
@@ -57,9 +58,11 @@ async def get_unpublished_places(page: int = 1, db: Session = Depends(get_db)):
     return db.query(Place).filter(Place.published == False).offset(offset).limit(paginate_by).all()
 
 
-@router.get("/id/{uuid}")
+@router.get("/id/{uuid}", response_model=schemas.Place)
 async def get_place(uuid, db: Session = Depends(get_db)):
-    return db.query(Place).filter(Place.id == uuid).first()
+    p = db.query(Place).filter(Place.id == uuid).first()
+    # p.avg_score()
+    return p
 
 
 @router.patch("/id/{uuid}")
