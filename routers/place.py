@@ -14,10 +14,24 @@ router = APIRouter(
 paginate_by = 50
 
 
-@router.get("/list-in-radious/{radious}/{lat}/{lon}", response_model=List[schemas.Place])
-def get_places_in_radious(radious: float, lon: float, lat: float, page: int = 1, db: Session = Depends(get_db)):
+# TODO pagiantion
+@router.get("/list-in-radius/{radius}/{lat}/{lon}", response_model=List[schemas.Place])
+def get_places_in_radius(radius: float, lon: float, lat: float, page: int = 1, db: Session = Depends(get_db)):
+    print("CCC")
     center = func.ST_Point(lon, lat)
-    places = db.query(Place).filter(Place.published == True, func.ST_DWithin(Place.location, center, radious)).order_by(Place.location).all()
+    places = db.query(Place).filter(Place.published == True, func.ST_DWithin(Place.location, center, radius)).order_by(
+        Place.location).all()
+
+    # TODO odegosc i sort po odleglosci
+    return places
+
+
+@router.get("/list-in-radius-category/{category}/{radius}/{lat}/{lon}", response_model=List[schemas.Place])
+def get_places_in_radius_category(category: str, radius: float, lon: float, lat: float, page: int = 1,
+                                  db: Session = Depends(get_db)):
+    center = func.ST_Point(lon, lat)
+    places = db.query(Place).filter(Place.published == True, Place.category == category,
+                                    func.ST_DWithin(Place.location, center, radius)).order_by(Place.location).all()
 
     # TODO odegosc i sort po odleglosci
     return places
