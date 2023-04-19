@@ -11,3 +11,4 @@ class Opinion(Base):
     stars = Column(Integer, CheckConstraint('stars>0 and stars<=5'), nullable=False)
     opinion = Column(String, nullable=False)
     place = Column(UUID(as_uuid=True), ForeignKey('place.id', ondelete="CASCADE"))
+    #TODO timestamp and filter by it
