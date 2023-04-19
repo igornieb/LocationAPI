@@ -2,6 +2,7 @@ from fastapi import FastAPI, Response, status, HTTPException, Depends, APIRouter
 from sqlalchemy.orm import Session
 from typing import List, Optional
 import schemas
+from sqlalchemy.sql.functions import func
 from models.Place import Place
 from database import get_db, engine
 
@@ -13,25 +14,33 @@ router = APIRouter(
 paginate_by = 50
 
 
-@router.get("/list")
-async def get_places(page: int = 1, db: Session = Depends(get_db)):
+@router.get("/list-in-radious/{radious}/{lat}/{lon}", response_model=List[schemas.Place])
+def get_places_in_radious(radious: float, lon: float, lat: float, page: int = 1, db: Session = Depends(get_db)):
+    center = func.ST_Point(lon, lat)
+    places = db.query(Place).filter(Place.published == True, func.ST_DWithin(Place.location, center, radious)).order_by(Place.location).all()
+
+    # TODO odegosc i sort po odleglosci
+    return places
+
+
+@router.get("/list", response_model=List[schemas.Place])
+def get_places(page: int = 1, db: Session = Depends(get_db)):
     offset = (page - 1) * paginate_by
     return db.query(Place).filter(Place.published == True).offset(offset).limit(paginate_by).all()
 
 
-@router.get("/list-unpublished")
-async def get_unpublished_places(page: int = 1, db: Session = Depends(get_db)):
-    offset = (page - 1) * paginate_by
-    return db.query(Place).filter(Place.published == False).offset(offset).limit(paginate_by).all()
-
-
-@router.post("/list")
+@router.post("/list", response_model=schemas.Place)
 async def create_places(place: schemas.PlaceCreate, db: Session = Depends(get_db)):
     place = Place(**place.dict())
     db.add(place)
     db.commit()
-    db.refresh(place)
     return place
+
+
+@router.get("/list-unpublished", response_model=List[schemas.Place])
+async def get_unpublished_places(page: int = 1, db: Session = Depends(get_db)):
+    offset = (page - 1) * paginate_by
+    return db.query(Place).filter(Place.published == False).offset(offset).limit(paginate_by).all()
 
 
 @router.get("/id/{uuid}")
