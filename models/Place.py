@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Boolean, String, Integer, UUID, Float, ForeignKey, func
+from sqlalchemy import Column, Boolean, String, Integer, UUID, Float, ForeignKey, func, select
 from geoalchemy2 import Geography, WKTElement
 import uuid
 from database import Base
@@ -23,6 +23,8 @@ class Place(Base):
     longitude = Column(Float, nullable=False)
     location = Column(Geography('POINT', srid=4326, spatial_index=True), nullable=False)
     category = Column(String, ForeignKey('category.category', ondelete="CASCADE"))
+    created_by = Column(UUID(as_uuid=True), ForeignKey('user.id', ondelete="SET NULL"))
+    distance = None
 
     def __init__(self, name, description, published, latitude, longitude, category):
         self.name = name
@@ -38,8 +40,17 @@ class Place(Base):
         session = Session()
         avg = session.query(func.avg(Opinion.stars)).filter(Opinion.place == self.id).one()
         session.close()
-        if str(avg[0])=='None':
+        if str(avg[0]) == 'None':
             return float(0.0)
         else:
             return float(avg[0])
+
+    @avg_score.expression
+    def avg_score(self):
+        return select(func.avg(Opinion.stars)).where(Opinion.place == self.id)
+
+    def distance_from_point(self, lon, lat):
+        session = Session()
+        point = func.ST_Point(lon, lat)
+        self.distance = session.query(func.ST_Distance(Place.location, point)).first()[0]
 
