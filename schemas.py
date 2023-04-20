@@ -1,3 +1,4 @@
+import datetime
 import uuid
 from typing import Optional, List
 from pydantic import BaseModel
@@ -9,7 +10,6 @@ class PlaceBase(BaseModel):
     name: str
     description: str
     category: str
-    published: bool = False
     latitude: float
     longitude: float
 
@@ -21,11 +21,14 @@ class PlaceCreate(PlaceBase):
 class PlaceEdit(PlaceBase):
     pass
 
+class PlaceAdminEdit(PlaceBase):
+    published: bool = False
 
 class Place(PlaceBase):
     id: uuid.UUID
     avg_score: float
     distance: float = None
+    published: bool = False
 
     class Config:
         orm_mode = True
@@ -57,6 +60,8 @@ class OpinionCreate(OpinionBase):
 
 class Opinion(OpinionCreate):
     id: uuid.UUID
+    created_on: datetime.datetime
+    created_by: uuid.UUID
 
     class Config:
         orm_mode = True
