@@ -1,3 +1,5 @@
+from typing import List
+
 from fastapi import FastAPI, Response, status, HTTPException, Depends, APIRouter
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
@@ -14,7 +16,7 @@ router = APIRouter(
 )
 
 
-@router.get("/place/id/{uuid}")
+@router.get("/place/id/{uuid}", response_model=List[schemas.Opinion])
 async def opinion_list(uuid, db: Session = Depends(get_db)):
     return db.query(Opinion).filter(Opinion.place == uuid).order_by(desc(Opinion.created_on)).all()
 
@@ -32,20 +34,19 @@ async def opinion_add(uuid, data: schemas.OpinionBase, user: User = Depends(get_
     return opinion
 
 
-@router.get("/id/{uuid}")
+@router.get("/id/{uuid}", response_model=schemas.Opinion)
 async def opinion_details(uuid, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
 
     return db.query(Opinion).filter(Opinion.id == uuid).first()
 
 
-@router.patch("/id/{uuid}")
+@router.patch("/id/{uuid}", response_model=schemas.Opinion)
 async def opinion_edit(uuid, data: schemas.OpinionBase, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     opinion = db.query(Opinion).filter(Opinion.id == uuid)
     if opinion.first() is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"opinion with id: {uuid} does not exist")
     if user.is_admin or opinion.created_by == user.id:
-        opinion = db.query(Opinion).filter(Opinion.id == uuid)
         opinion.update(data.dict(), synchronize_session=False)
         db.commit()
         return opinion.first()

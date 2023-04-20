@@ -16,7 +16,7 @@ router = APIRouter(
 )
 
 
-@router.post("/register")
+@router.post("/register", response_model=schemas.User)
 async def register_user(data: schemas.UserCreate, db: Session = Depends(get_db)):
     if db.query(User).filter(User.username == data.username).first() is not None:
         raise HTTPException(status_code=status.HTTP_208_ALREADY_REPORTED)
@@ -55,8 +55,8 @@ async def user_delete(user: User = Depends(get_current_user), db: Session = Depe
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-@router.patch("/settings/password")
-async def user_details(data: schemas.UserEdit, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+@router.patch("/settings/password",)
+async def set_passsword(data: schemas.UserEdit, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     user = db.query(User).filter(User.id == user.id)
     data.password = hash_password(data.password)
     user.update(data.dict(), synchronize_session=False)
