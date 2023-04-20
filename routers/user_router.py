@@ -16,13 +16,13 @@ router = APIRouter(
 )
 
 
-# TODO authentication
-
 @router.post("/register")
 async def register_user(data: schemas.UserCreate, db: Session = Depends(get_db)):
     if db.query(User).filter(User.username == data.username).first() is not None:
         raise HTTPException(status_code=status.HTTP_208_ALREADY_REPORTED)
     user = User(username=data.username, email=data.email, password=hash_password(data.password))
+    if len(db.query(User).all())==0:
+        user.is_admin=True
     db.add(user)
     db.commit()
     return user
