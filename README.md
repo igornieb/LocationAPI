@@ -8,11 +8,14 @@ and rating from 1 to 5 stars.
 This API is made in Python with FastAPI. For database I used Postgres with
 PostGIS for geographical features of this API, SQLAlchemy is used as ORM.
 
-I used this project to become more familiar with FastAPI and SQLAlchemy libraries.
+I used this project to become more familiar with FastAPI and SQLAlchemy
+libraries as well as PostGIS extension for Postgres.
 
 ## Run localy
 
 Right now there is no easy way to run this project on your local machine. Docker version is coming soon :).
+
+If you want you can edit `database.py` file with your local postgres credentials (database requires that postgis is installed and enabled!)
 
 ## API endpoints
 
