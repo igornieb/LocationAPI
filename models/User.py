@@ -4,7 +4,6 @@ from database import Base
 from sqlalchemy_utils import EmailType
 
 
-
 class User(Base):
     __tablename__ = "user"
 

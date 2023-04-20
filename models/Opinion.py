@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, UUID, CheckConstraint, ForeignKey, DateTime, func
+from sqlalchemy import Column, String, Integer,UUID, CheckConstraint, ForeignKey, DateTime, func
 from geoalchemy2 import Geography, WKTElement
 import uuid
 from database import Base
