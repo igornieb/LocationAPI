@@ -6,15 +6,14 @@ from sqlalchemy.orm import sessionmaker
 from models.User import User
 from database import get_db, engine
 from jose import jwt
+import os
 
-# TODO
-SECRET_KEY = "mysecretkey"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
-REFRESH_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7
-JWT_SECRET_KEY = "JWT_SECRET_KEY"
-JWT_REFRESH_SECRET_KEY = "JWT_REFRESH_SECRET_KEY"
-##
+SECRET_KEY = os.environ.get("SECRET_KEY")
+ALGORITHM = os.environ.get("ALGORITHM")
+ACCESS_TOKEN_EXPIRE_MINUTES = os.environ.get("ACCESS_TOKEN_EXPIRE_MINUTES")
+REFRESH_TOKEN_EXPIRE_MINUTES = os.environ.get("REFRESH_TOKEN_EXPIRE_MINUTES")
+JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY")
+JWT_REFRESH_SECRET_KEY = os.environ.get("JWT_REFRESH_SECRET_KEY")
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
