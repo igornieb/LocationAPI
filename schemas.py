@@ -25,6 +25,7 @@ class PlaceEdit(PlaceBase):
 class Place(PlaceBase):
     id: uuid.UUID
     avg_score: float
+    distance: float = None
 
     class Config:
         orm_mode = True
@@ -70,6 +71,18 @@ class UserCreate(UserBase):
     password: str
 
 
+class UserEdit(BaseModel):
+    password: str
+
+
+class UserEmailEdit(BaseModel):
+    email: str
+
+
+class UserAdminEdit(BaseModel):
+    is_admin: bool
+
+
 class UserLogin(UserBase):
     password: str
 
@@ -86,4 +99,3 @@ class TokenSchema(BaseModel):
 class TokenPayload(BaseModel):
     sub: str = None
     exp: int = None
-
